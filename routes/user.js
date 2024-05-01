@@ -13,7 +13,7 @@ router.post('/signup',(req,res) =>{
     connection.query(query,[user.pseudo],(err,results)=>{
         if(!err){
             if(results.length <=0){
-                query = "insert into user(name, firstname, pseudo, password, status, role) values(?,?,?,?,'false', 'user')";
+                query = "insert into user(name, firstname, pseudo, password, status, role) values(?,?,?,?,'true', 'user')";
                 connection.query(query,[user.name,user.firstname,user.pseudo,user.password],(err,results) =>{
                     if(!err){
                         return res.status(200).json({message:"Successfully Registered"});
@@ -64,7 +64,7 @@ router.post('/login',(req,res)=>{
 
 //API pour récupérer la liste des user (exempt admin)
 router.get('/get',auth.authenticateToken,checkRole.checkRole,(req,res)=>{
-    var query ="Select id_user, name, pseudo, status from user where role='user'";
+    var query ="Select id_user, name, firstname, pseudo, status from user where role='user'";
     connection.query(query,(err,results)=>{
         if(!err){
             return res.status(200).json(results);
@@ -74,6 +74,19 @@ router.get('/get',auth.authenticateToken,checkRole.checkRole,(req,res)=>{
         }
     })
 })
+
+router.get('/get/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    var query = "SELECT id_user, name, firstname, pseudo FROM user WHERE id_user = ?";
+    connection.query(query, [userId], (err, results) => {
+        if (!err) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(500).json(err);
+        }
+    });
+});
+
 
 //API pour mettre à jour un utilisateur
 router.patch('/update',auth.authenticateToken,(req,res)=>{

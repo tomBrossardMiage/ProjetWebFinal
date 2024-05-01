@@ -25,5 +25,7 @@ CREATE TABLE project (
     name VARCHAR(255),
     description TEXT,
     creator_id INT,
+    date DATE,
+    nbParticipant INT,
     FOREIGN KEY (creator_id) REFERENCES user(id_user)
 );

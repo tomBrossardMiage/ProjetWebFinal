@@ -7,9 +7,9 @@ var auth = require('../services/authentication');
 router.post('/add', auth.authenticateToken, (req, res, next) => {
     let project = req.body;
     let userId = res.locals.id; // on récupère l'id de la personne connecté via auth.authenticateToken
-    let query = "INSERT INTO project (name, description, creator_id) VALUES (?, ?, ?)";
+    let query = "INSERT INTO project (name, description, creator_id, nbParticipant, date) VALUES (?, ?, ?, ?, ?)";
     
-    connection.query(query, [project.name, project.description, userId], (err, results) => { //on place son id dans l'id_creator
+    connection.query(query, [project.Nom, project.description, userId, project.NbParticipant, project.Date], (err, results) => { //on place son id dans l'id_creator
         if (!err) {
             let projectId = results.insertId;
             
@@ -32,13 +32,37 @@ router.get('/get',(req,res,next)=>{
     var query = "Select * from project order by name";
     connection.query(query,(err,results)=>{
         if(!err){
-            return res.status(200).json({message:results});
+            return res.status(200).json({results});
         }
         else{
             return res.status(500).json(err);
         }
     })
 })
+
+router.get('/getNbC/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    var query = "SELECT Count(*) as nbProject From Project WHERE creator_id = ?";
+    connection.query(query, [userId], (err, results) => {
+        if (!err) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(500).json(err);
+        }
+    });
+});
+
+router.get('/getNbP/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    var query = "SELECT Count(*) as nbProject From Participate WHERE id_user = ?";
+    connection.query(query, [userId], (err, results) => {
+        if (!err) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(500).json(err);
+        }
+    });
+});
 
 //Modifier le nom d'un projet
 router.patch('/updateName',(req,res,next)=>{
