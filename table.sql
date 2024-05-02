@@ -9,15 +9,14 @@ create table user(
     role varchar(50)
     );
 
-
 insert into user(name,firstname,pseudo,password,status,role) values('Admin', 'tom', 'admin', 'password', 'true', 'admin');
 CREATE TABLE project (
     id_project INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
     description TEXT,
     creator_id INT,
-    date DATE,
     nbParticipant INT,
+    date DATE,
     FOREIGN KEY (creator_id) REFERENCES user(id_user)
 );
 CREATE TABLE participate (
