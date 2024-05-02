@@ -11,15 +11,6 @@ create table user(
 
 
 insert into user(name,firstname,pseudo,password,status,role) values('Admin', 'tom', 'admin', 'password', 'true', 'admin');
-
-CREATE TABLE participate (
-    id_participate INT AUTO_INCREMENT PRIMARY KEY,
-    id_user INT,
-    id_project INT,
-    FOREIGN KEY (id_user) REFERENCES user(id_user),
-    FOREIGN KEY (id_project) REFERENCES project(id_project)
-);
-
 CREATE TABLE project (
     id_project INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
@@ -29,3 +20,11 @@ CREATE TABLE project (
     nbParticipant INT,
     FOREIGN KEY (creator_id) REFERENCES user(id_user)
 );
+CREATE TABLE participate (
+    id_participate INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT,
+    id_project INT,
+    FOREIGN KEY (id_user) REFERENCES user(id_user),
+    FOREIGN KEY (id_project) REFERENCES project(id_project)
+);
+
