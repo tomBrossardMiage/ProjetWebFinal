@@ -29,7 +29,7 @@ router.post('/add', auth.authenticateToken, (req, res, next) => {
 
 //Retourner la liste des projets
 router.get('/get',(req,res,next)=>{
-    var query = "Select * from project order by name";
+    var query = "SELECT P.id_project,name,description,creator_id,date,nbParticipant,count(id_participate) as registeredMember from project P, participate PA where PA.id_project = P.id_project GROUP BY P.id_project,name,description,creator_id,date,nbParticipant;";
     connection.query(query,(err,results)=>{
         if(!err){
             return res.status(200).json({results});
