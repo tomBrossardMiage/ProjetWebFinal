@@ -7,14 +7,14 @@ var auth = require('../services/authentication');
 router.post('/add', auth.authenticateToken, (req, res, next) => {
     let project = req.body;
     let userId = res.locals.id; // on récupère l'id de la personne connecté via auth.authenticateToken
-    let query = "INSERT INTO project (name, description, creator_id, nbParticipant, date) VALUES (?, ?, ?, ?, ?)";
-    
-    connection.query(query, [project.Nom, project.description, userId, project.NbParticipant, project.Date], (err, results) => { //on place son id dans l'id_creator
+    let query = "INSERT INTO project (name, description, creator_id, nbParticipant, date, nbParticipantMax) VALUES (?, ?, ?, 1, ?, ?)";
+
+    connection.query(query, [project.Nom, project.description, userId, project.Date, project.NbParticipantMax], (err, results) => {
         if (!err) {
             let projectId = results.insertId;
             
             let insertQuery = "INSERT INTO participate (id_user, id_project) VALUES (?, ?)";
-            connection.query(insertQuery, [userId, projectId], (err, results) => {//on ajoute id de projet inséré ainsi que l'id de l'utilisateur qui à créer le projet
+            connection.query(insertQuery, [userId, projectId], (err, results) => {
                 if (err) {
                     return res.status(500).json({ error: err, message: "Tuple insertion on participate table failed" });
                 } else {
@@ -96,6 +96,11 @@ router.patch('/updateDescription',(req,res,next)=>{
             return res.status(500).json(err);
         }
     })
+})
+
+router.patch('/addUserToProject/:id',(req,res)=>{
+    const projectid = parseInt(req.params.id);
+    var query = "update project set nbParticipant = nbParticipant + 1 where id_project =?";
 })
 
 
