@@ -7,9 +7,9 @@ var auth = require('../services/authentication');
 router.post('/add', auth.authenticateToken, (req, res, next) => {
     let project = req.body;
     let userId = res.locals.id; // on récupère l'id de la personne connecté via auth.authenticateToken
-    let query = "INSERT INTO project (name, description, creator_id, nbParticipant, date, nbParticipantMax) VALUES (?, ?, ?, 1, ?, ?)";
+    let query = "INSERT INTO project (name, description, creator_id, nbParticipant, date) VALUES (?, ?, ?, ?, ?)";
 
-    connection.query(query, [project.Nom, project.description, userId, project.Date, project.NbParticipantMax], (err, results) => {
+    connection.query(query, [project.Nom, project.description, userId, project.nbParticipant, project.Date], (err, results) => {
         if (!err) {
             let projectId = results.insertId;
             
@@ -40,6 +40,7 @@ router.get('/get',(req,res,next)=>{
     })
 })
 
+//Retourne le nombre de projet que l'user connecter à créer
 router.get('/getNbC/:id', (req, res) => {
     const userId = parseInt(req.params.id);
     var query = "SELECT Count(*) as nbProject From Project WHERE creator_id = ?";
@@ -52,6 +53,7 @@ router.get('/getNbC/:id', (req, res) => {
     });
 });
 
+//Retourne le nombre de projet ou participe l'user connecté
 router.get('/getNbP/:id', (req, res) => {
     const userId = parseInt(req.params.id);
     var query = "SELECT Count(*) as nbProject From Participate WHERE id_user = ?";
@@ -60,6 +62,32 @@ router.get('/getNbP/:id', (req, res) => {
             return res.status(200).json(results);
         } else {
             return res.status(500).json(err);
+        }
+    });
+});
+
+//retourne true si l'user connecté participe au projet en question sinon false
+router.get('/ParticipeOuPas/:id_user/:id_project', (req, res) => {
+    const id_user = req.params.id_user;
+    const id_project = req.params.id_project;
+
+    // Requête SQL pour vérifier si l'utilisateur participe au projet
+    const query = 'SELECT * FROM participate WHERE id_user = ? AND id_project = ?';
+
+    // Exécutez la requête SQL avec les paramètres
+    connection.query(query, [id_user, id_project], (error, results) => {
+        if (error) {
+            console.error("Erreur lors de la vérification de la participation :", error);
+            return res.status(500).json({ error: "Erreur lors de la vérification de la participation" });
+        }
+
+        // Vérifiez si des résultats ont été retournés
+        if (results.length > 0) {
+            // L'utilisateur participe au projet
+            return res.status(200).json({ participe: true });
+        } else {
+            // L'utilisateur ne participe pas au projet
+            return res.status(200).json({ participe: false });
         }
     });
 });
