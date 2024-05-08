@@ -40,6 +40,35 @@ router.get('/get',(req,res,next)=>{
     })
 })
 
+//Retourner les informations d'un projet
+router.get('/get/:id',(req,res,next)=>{
+    const projectId = parseInt(req.params.id);
+    var query = "SELECT * from project where id_project = ?";
+    connection.query(query,[projectId],(err,results)=>{
+        if(!err){
+            return res.status(200).json({results});
+        }
+        else{
+            return res.status(500).json(err);
+        }
+    })
+})
+
+//modifier un project
+router.post('/update', auth.authenticateToken, (req, res, next) => {
+    let project = req.body;
+    let query = "update project set name=?, description=?, nbParticipant=? , date=? where id_project=?";
+
+    connection.query(query, [project.Nom, project.description,project.nbParticipant, project.Date,project.id_project], (err, results) => {
+    if (err) {
+        return res.status(500).json(err);
+    }else{
+        return res.status(200).json({ message: "Project updated Successfully" });
+    }
+});
+});
+
+
 //Retourne le nombre de projet que l'user connecter à créer
 router.get('/getNbC/:id', (req, res) => {
     const userId = parseInt(req.params.id);
