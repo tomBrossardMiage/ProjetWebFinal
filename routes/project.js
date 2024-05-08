@@ -40,6 +40,34 @@ router.get('/get',(req,res,next)=>{
     })
 })
 
+//Retourne la liste des projet que j'ai créer
+router.get('/getMy/:id',(req,res,next)=>{
+    const userId = parseInt(req.params.id);
+    var query = "SELECT P.id_project,name,description,creator_id,date,nbParticipant,count(id_participate) as registeredMember from project P, participate PA where P.creator_id = ? and PA.id_project = P.id_project GROUP BY P.id_project,name,description,creator_id,date,nbParticipant;";
+    connection.query(query, [userId], (err, results) => {
+        if (!err) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(500).json(err);
+        }
+    });
+});
+
+//Retourne la liste des projet ou je ne participe pas NP = NotParticipate
+router.get('/getNP/:id',(req,res,next)=>{
+    const userId = parseInt(req.params.id);
+    var query = "SELECT P.id_project,name,description,creator_id,date,nbParticipant,count(id_participate) as registeredMember from project P, participate PA where PA.id_project = P.id_project and PA.id_user != ? GROUP BY P.id_project,name,description,creator_id,date,nbParticipant;";
+    connection.query(query, [userId], (err, results) => {
+        if (!err) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(500).json(err);
+        }
+    });
+});
+
+
+
 //Retourne le nombre de projet que l'user connecter à créer
 router.get('/getNbC/:id', (req, res) => {
     const userId = parseInt(req.params.id);
@@ -126,10 +154,112 @@ router.patch('/updateDescription',(req,res,next)=>{
     })
 })
 
-router.patch('/addUserToProject/:id',(req,res)=>{
-    const projectid = parseInt(req.params.id);
-    var query = "update project set nbParticipant = nbParticipant + 1 where id_project =?";
-})
+//s'inscrire a un projet
+router.post('/follow/:id_user/:id_project',(req, res) => {
+    const id_user = req.params.id_user;
+    const id_project = req.params.id_project;
+
+    const participationQuery = 'SELECT * FROM participate WHERE id_user = ? AND id_project = ?';
+
+    const insertParticipationQuery = 'INSERT INTO participate (id_user, id_project) VALUES (?, ?)';
+
+    connection.query(participationQuery, [id_user, id_project], (err, participationResult) => {
+        if (err) {
+            console.error('Erreur lors de la vérification de la participation de l\'utilisateur : ', err);
+            res.status(500).json({ error: 'Erreur lors de la vérification de la participation de l\'utilisateur' });
+        } else {
+            if (participationResult.length > 0) {
+                // L'utilisateur participe déjà au projet
+                res.status(403).json({ message: "Vous participez déjà à ce projet." });
+            } else {
+                // L'utilisateur ne participe pas encore au projet, l'inscrire
+                connection.query(insertParticipationQuery, [id_user, id_project], (err, insertResult) => {
+                    if (err) {
+                        console.error('Erreur lors de l\'inscription de l\'utilisateur au projet : ', err);
+                        res.status(500).json({ error: 'Erreur lors de l\'inscription de l\'utilisateur au projet' });
+                    } else {
+                        res.status(200).json({ message: "Inscription au projet réussie." });
+                    }
+                });
+            }
+        }
+    });
+});
+
+//se désinscrire d'un projet
+router.delete('/unfollow/:id_user/:id_project',(req, res) => {
+    const id_user = req.params.id_user;
+    const id_project = req.params.id_project;
+
+    const creatorQuery = 'SELECT * FROM project WHERE creator_id = ? AND id_project = ?';
+    
+    const deleteParticipationQuery = 'DELETE FROM participate WHERE id_user = ? AND id_project = ?';
+
+    connection.query(creatorQuery, [id_user, id_project], (err, creatorResult) => {
+        if (err) {
+            console.error('Erreur lors de la vérification du créateur du projet : ', err);
+            res.status(500).json({ error: 'Erreur lors de la vérification du créateur du projet' });
+        } else {
+            if (creatorResult.length > 0) {
+                // L'utilisateur est le créateur du projet
+                res.status(403).json({ message: "Vous êtes le créateur de ce projet. Vous ne pouvez pas vous désinscrire." });
+            } else {
+                // L'utilisateur n'est pas le créateur du projet
+                connection.query(deleteParticipationQuery, [id_user, id_project], (err, deleteResult) => {
+                    if (err) {
+                        console.error('Erreur lors de la suppression de la participation de l\'utilisateur : ', err);
+                        res.status(500).json({ error: 'Erreur lors de la suppression de la participation de l\'utilisateur' });
+                    } else {
+                        res.status(200).json({ message: "Votre désinscription du projet a réussi." });
+                    }
+                });
+            }
+        }
+    });
+});
+
+//Supprimer le projet
+router.delete('/delete/:id_user/:id_project',(req, res) => {
+    const id_user = req.params.id_user;
+    const id_project = req.params.id_project;
+
+    const creatorCheckQuery = 'SELECT * FROM project WHERE creator_id = ? AND id_project = ?';
+    const deleteParticipationQuery = 'DELETE FROM participate WHERE id_project = ?';
+    const deleteProjectQuery = 'DELETE FROM project WHERE id_project = ?';
+
+    connection.query(creatorCheckQuery, [id_user, id_project], (err, creatorCheckResult) => {
+        if (err) {
+            console.error('Erreur lors de la vérification du créateur du projet : ', err);
+            res.status(500).json({ error: 'Erreur lors de la vérification du créateur du projet' });
+        } else {
+            if (creatorCheckResult.length === 0) {
+                // L'utilisateur n'est pas le créateur du projet
+                res.status(403).json({ message: "Vous n'êtes pas autorisé à supprimer ce projet." });
+            } else {
+                // L'utilisateur est le créateur du projet, supprimer le projet et les participations
+                connection.query(deleteParticipationQuery, [id_project], (err, deleteParticipationResult) => {
+                    if (err) {
+                        console.error('Erreur lors de la suppression des participations : ', err);
+                        res.status(500).json({ error: 'Erreur lors de la suppression des participations' });
+                    } else {
+                        // Supprimer le projet
+                        connection.query(deleteProjectQuery, [id_project], (err, deleteProjectResult) => {
+                            if (err) {
+                                console.error('Erreur lors de la suppression du projet : ', err);
+                                res.status(500).json({ error: 'Erreur lors de la suppression du projet' });
+                            } else {
+                                res.status(200).json({ message: "Le projet a été supprimé avec succès." });
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+});
+
+
+
 
 
 
