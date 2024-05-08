@@ -46,7 +46,7 @@ router.get('/getMy/:id',(req,res,next)=>{
     var query = "SELECT P.id_project,name,description,creator_id,date,nbParticipant,count(id_participate) as registeredMember from project P, participate PA where P.creator_id = ? and PA.id_project = P.id_project GROUP BY P.id_project,name,description,creator_id,date,nbParticipant;";
     connection.query(query, [userId], (err, results) => {
         if (!err) {
-            return res.status(200).json(results);
+            return res.status(200).json({results});
         } else {
             return res.status(500).json(err);
         }
