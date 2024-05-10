@@ -53,13 +53,13 @@ router.get('/getMy/:id',(req,res,next)=>{
     });
 });
 
-//Retourne la liste des projet ou je ne participe pas NP = NotParticipate
-router.get('/getNP/:id',(req,res,next)=>{
+//Retourne la liste des projet ou je ne participe
+router.get('/getP/:id',(req,res,next)=>{
     const userId = parseInt(req.params.id);
-    var query = "SELECT P.id_project,name,description,creator_id,date,nbParticipant,count(id_participate) as registeredMember from project P, participate PA where PA.id_project = P.id_project and PA.id_user != ? GROUP BY P.id_project,name,description,creator_id,date,nbParticipant;";
-    connection.query(query, [userId], (err, results) => {
+    var query = "SELECT P.id_project,name,description,creator_id,date,nbParticipant,count(id_participate) as registeredMember from project P, participate PA where PA.id_project = P.id_project and PA.id_user = ? and P.creator_id != ? GROUP BY P.id_project,name,description,creator_id,date,nbParticipant;";
+    connection.query(query, [userId, userId], (err, results) => {
         if (!err) {
-            return res.status(200).json(results);
+            return res.status(200).json({results});
         } else {
             return res.status(500).json(err);
         }
