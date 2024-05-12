@@ -62,22 +62,10 @@ router.post('/login',(req,res)=>{
    })
 })
 
-//API pour récupérer la liste des user (exempt admin)
-router.get('/get',auth.authenticateToken,checkRole.checkRole,(req,res)=>{
-    var query ="Select id_user, name, firstname, pseudo, status from user where role='user'";
-    connection.query(query,(err,results)=>{
-        if(!err){
-            return res.status(200).json(results);
-        }
-        else{
-            return res.status(500).json(err);
-        }
-    })
-})
-
+//récupérer les informations d'un user
 router.get('/get/:id', (req, res) => {
     const userId = parseInt(req.params.id);
-    var query = "SELECT id_user, name, firstname, pseudo FROM user WHERE id_user = ?";
+    var query = "SELECT id_user, name, firstname, pseudo, password FROM user WHERE id_user = ?";
     connection.query(query, [userId], (err, results) => {
         if (!err) {
             return res.status(200).json(results);
@@ -88,27 +76,8 @@ router.get('/get/:id', (req, res) => {
 });
 
 
-//API pour mettre à jour un utilisateur
-router.patch('/update',auth.authenticateToken,(req,res)=>{
-    let user = req.body;
-    var query = "update user set status=? where id=?";
-    connection.query(query,[user.status,user.id],(err,results)=>{
-        if(!err){
-            if(results.affectedRows == 0){
-                return res.status(404).json({message:"User id is does not exist"});
-            }
-            return res.status(200).json({message:"User updated successfully"});
 
-        }
-        else{
-            return res.status(500).json(err);
-        } 
-    })
-})
 
-router.get('/checkToken',auth.authenticateToken,(req,res)=>{
-    return res.status(200).json({message:"true"});
-})
 
 
 module.exports = router;
