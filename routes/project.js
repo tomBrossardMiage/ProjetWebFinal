@@ -53,6 +53,19 @@ router.get('/get/:id',(req,res,next)=>{
         }
     })
 })
+//Retourner les informations d'un projet
+router.get('/getParticipate/:id',(req,res,next)=>{
+    const projectId = parseInt(req.params.id);
+    var query = "select name,firstname from user U,participate P where U.id_user = P.id_user and id_project = ?";
+    connection.query(query,[projectId],(err,results)=>{
+        if(!err){
+            return res.status(200).json({results});
+        }
+        else{
+            return res.status(500).json(err);
+        }
+    })
+})
 
 //modifier un project
 router.post('/update', auth.authenticateToken, (req, res, next) => {
