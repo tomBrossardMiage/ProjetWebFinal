@@ -1,6 +1,5 @@
+Bienvenue sur RecruitMiage
 
+Cette application permet de faciliter l'organisation de différents projets au sein de la famille MIAGISTE.
 
-npm install @fortawesome/free-solid-svg-icons
-
-
-inside mysql console : ALTER USER 'your user name'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your password';
+Vous pouvez créer un projet, participer à des projet. Toutes les informations sur chaques projets sont indiqués. Vous avez juste à vous connecter sur l'application qui sera pour vous un deuxième petit cerveau :)
