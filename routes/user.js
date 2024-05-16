@@ -7,8 +7,9 @@ require('dotenv').config();
 var auth = require('../services/authentication');
 var checkRole = require('../services/checkRole');
 
+//API pour s'inscrire au projet
 router.post('/signup',(req,res) =>{
-    let user = req.body;
+    let user = req.body;//récupérer les infos du body ==> dans une variable user
     query = "select name, firstname, password from user where pseudo=?"
     connection.query(query,[user.pseudo],(err,results)=>{
         if(!err){
@@ -37,7 +38,7 @@ router.post('/signup',(req,res) =>{
 
 //API pour se connecter
 router.post('/login',(req,res)=>{
-   const user = req.body;
+   const user = req.body;//récupérer les infos du body ==> dans une variable user
    query = "select id_user,name,pseudo,password,status,role from user where pseudo=?"
    connection.query(query,[user.pseudo],(err,results)=>{
         if(!err){

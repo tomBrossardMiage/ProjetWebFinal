@@ -68,48 +68,6 @@ router.get('/getP/:id',(req,res,next)=>{
 
 
 
-//Retourner les informations d'un projet
-router.get('/get/:id',(req,res,next)=>{
-    const projectId = parseInt(req.params.id);
-    var query = "SELECT * from project where id_project = ?";
-    connection.query(query,[projectId],(err,results)=>{
-        if(!err){
-            return res.status(200).json({results});
-        }
-        else{
-            return res.status(500).json(err);
-        }
-    })
-})
-//Retourner les informations d'un projet
-router.get('/getParticipate/:id',(req,res,next)=>{
-    const projectId = parseInt(req.params.id);
-    var query = "select name,firstname from user U,participate P where U.id_user = P.id_user and id_project = ?";
-    connection.query(query,[projectId],(err,results)=>{
-        if(!err){
-            return res.status(200).json({results});
-        }
-        else{
-            return res.status(500).json(err);
-        }
-    })
-})
-
-//modifier un project
-router.post('/update', auth.authenticateToken, (req, res, next) => {
-    let project = req.body;
-    let query = "update project set name=?, description=?, nbParticipant=? , date=? where id_project=?";
-
-    connection.query(query, [project.Nom, project.description,project.nbParticipant, project.Date,project.id_project], (err, results) => {
-    if (err) {
-        return res.status(500).json(err);
-    }else{
-        return res.status(200).json({ message: "Project updated Successfully" });
-    }
-});
-});
-
-
 //Retourne le nombre de projet que l'user connecter à créer
 router.get('/getNbC/:id', (req, res) => {
     const userId = parseInt(req.params.id);
@@ -161,40 +119,6 @@ router.get('/ParticipeOuPas/:id_user/:id_project', (req, res) => {
         }
     });
 });
-
-//Modifier le nom d'un projet
-router.patch('/updateName',(req,res,next)=>{
-    let project = req.body;
-    var query = "update project set name=? where id_project=?";
-    connection.query(query,[project.name, project.id_project],(err,results)=>{
-        if(!err){
-            if(results.affectedRows == 0){
-                return res.status(404).json({message:"Project id does not exist"});
-            }
-            return res.status(200).json({message:"Project name updated successfully"});
-        }
-        else{
-            return res.status(500).json(err);
-        }
-    })
-})
-
-//Modifier la description d'un projet
-router.patch('/updateDescription',(req,res,next)=>{
-    let project = req.body;
-    var query = "update project set description=? where id_project=?";
-    connection.query(query,[project.description, project.id_project],(err,results)=>{
-        if(!err){
-            if(results.affectedRows == 0){
-                return res.status(404).json({message:"Project id does not exist"});
-            }
-            return res.status(200).json({message:"Project description updated successfully"});
-        }
-        else{
-            return res.status(500).json(err);
-        }
-    })
-})
 
 //s'inscrire a un projet
 router.post('/follow/:id_user/:id_project',(req, res) => {

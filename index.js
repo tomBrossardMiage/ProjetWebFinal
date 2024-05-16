@@ -12,5 +12,5 @@ app.use('/user', userRoute);
 app.use('/project', projectRoute);
 
 
-
+// Exporte l'application Express pour pouvoir l'utiliser dans d'autres fichiers
 module.exports = app;
